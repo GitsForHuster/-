@@ -1,0 +1,16 @@
+struct ifaddrs
+{
+    struct ifaddrs  *ifa_next;    /* Next item in list */  ifa_next指向链表的下一个成员
+    char            *ifa_name;    /* Name of interface */ ifa_name是接口名称，以0结尾的字符串，比如eth0，lo；
+    unsigned int     ifa_flags;   /* Flags from SIOCGIFFLAGS */ ifa_flags是接口的标识位（比如当IFF_BROADCAST或IFF_POINTOPOINT设置到此标识位时，影响联合体变量ifu_broadaddr存储广播地址或ifu_dstaddr记录点对点地址）
+    struct sockaddr *ifa_addr;    /* Address of interface */
+    struct sockaddr *ifa_netmask; /* Netmask of interface */
+    union
+    {
+        struct sockaddr *ifu_broadaddr; /* Broadcast address of interface */ 存储广播地址
+        struct sockaddr *ifu_dstaddr; /* Point-to-point destination address */点对点地址
+    } ifa_ifu;
+    #define              ifa_broadaddr ifa_ifu.ifu_broadaddr
+    #define              ifa_dstaddr   ifa_ifu.ifu_dstaddr
+    void            *ifa_data;    /* Address-specific data */ifa_data存储了该接口协议族的特殊信息，它通常是NULL（一般不关注他）。
+}; 

@@ -1,0 +1,19 @@
+tcp socket的backlog参数：
+
+在linux系统内核中维护了两个队列：syns queue和accept queue
+
+syns queue
+
+用于保存半连接状态的请求，其大小通过/proc/sys/net/ipv4/tcp_max_syn_backlog指定，一般默认值是512，
+不过这个设置有效的前提是系统的syncookies功能被禁用。互联网常见的TCP SYN FLOOD恶意DOS攻击方式就是建立
+大量的半连接状态的请求，然后丢弃，导致syns queue不能保存其它正常的请求。
+
+accept queue
+
+用于保存全连接状态的请求，其大小通过/proc/sys/net/core/somaxconn指定，在使用listen函数时，内核会根
+据传入的backlog参数与系统参数somaxconn，取二者的较小值。
+
+
+如果accpet queue队列满了，server将发送一个ECONNREFUSED错误信息Connection refused到client。
+
+

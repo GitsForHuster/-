@@ -1,7 +1,42 @@
-1 、wireshark抓包常见提示含义解析
+1 、wireshark抓包常见提示含义解析，可以参考如下连接
   https://blog.csdn.net/u012398362/article/details/52276067；
 
-2、spurious retransmission timeouts理解
+2、
+  Packet size limited during capture
+     提示说明标记的包没有抓全，在某些操作系统中，默认只抓96个字节，tcpdump中有“-s”参数可用于指定要抓的字节数，
+     “-s 1500”即每个包可以抓1500个字节，‘-s 0’每个包有多少抓多少
+ 
+TCP Previous segment not captured
+     表明有网络包没抓到，可能是抓包工具漏掉了，也可能是真的丢了。看对方回复的ACK即可知道，如果包括了对没抓到的包的确认，
+     那么是抓包工具漏了，否则就是真的丢了
+ 
+ TCP ACKed unseen segment
+     ACK有抓到，但被ACK的包没被抓到，wireshark上常有的事，可忽略。
+ 
+TCP Out_of_Order
+     包乱序，在正常的情况下，一个包的seq等于上一个包的seq加上len，也就是说包的seq一定大于或等于上一个包的seq，
+     当wireshark发现这个包的seq小于上一个包的seq的时候，就会标注 TCP Out_of_Order，即包乱序了。
+     跨度小的乱序没事，跨度大的乱序可能引起重传。
+ 
+TCP Dup ACK
+     当乱序或丢包发生时，接收方会收到一些seq号比期待值大的包，接收方每收到一个这样的包，就会重传一次ACK，告诉发送方，
+     自己的期待值。这样的ACK包会被标注为  TCP Dup ACK
+ 
+TCP Fast Retransmission
+     发送方收到3个或以上的【TCP Dup ACK】时，就意识到之前的包丢失了，就会触发超时重传
+ 
+TCP Retransmission
+     如果一个包丢失了，但又没发生【TCP Dup ACK】时，就无法触发快速重传，就只有等超时重传了，重传的包也就是TCP Retransmission
+ 
+TCP zerowindow
+     TCP包中的win指发送方接收窗口的大小，当win=0时，wireshark就给包打上【TCP zerowindow】，表示缓冲区已满，不能接收数据了。
+ 
+TCP window Full
+     当打上这个标志时，表示发送方已经把接送方声明的窗口大小耗尽了。即接送方声明的win=65535，但现在在途字节数也已经有65535了。
+     发送方停止发送数据。
+
+
+spurious retransmission timeouts理解
   按照rfc4138的描述，虚假超时重传指的是实际上没有超时，但看起来超时了（根据rtt估算出的RTO超时了，但实际上只是rtt发生了突变而已），
   进而引起了协议栈的一系列行为，而这些行为不是最优的。spurious retransmission意味着 “发送端” 认为发送的包已经丢失了，然后就重传了，
   尽管此时接收端已经发送了对这些包的确认（确认还没收到或者已经丢失了）。这是需要在发送端抓包，分析原因。如果接收端以前收到过相同的包，

@@ -1,0 +1,8 @@
+1 、wireshark抓包常见提示含义解析
+  https://blog.csdn.net/u012398362/article/details/52276067；
+
+2、spurious retransmission timeouts理解
+  按照rfc4138的描述，虚假超时重传指的是实际上没有超时，但看起来超时了（根据rtt估算出的RTO超时了，但实际上只是rtt发生了突变而已），
+  进而引起了协议栈的一系列行为，而这些行为不是最优的。spurious retransmission意味着 “发送端” 认为发送的包已经丢失了，然后就重传了，
+  尽管此时接收端已经发送了对这些包的确认（确认还没收到或者已经丢失了）。这是需要在发送端抓包，分析原因。如果接收端以前收到过相同的包，
+  接收端就会报spurious retransmission，但是发送端是不会报spurious retransmission的。
